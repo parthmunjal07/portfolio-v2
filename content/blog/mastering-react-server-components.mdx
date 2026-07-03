@@ -1,0 +1,30 @@
+---
+title: "Mastering React Server Components"
+date: "2026-09-12T00:00:00Z"
+excerpt: "A deep dive into how Server Components work under the hood and when to use them over Client Components."
+tags: ["React", "Next.js", "Server Components"]
+draft: false
+---
+
+React Server Components (RSC) have fundamentally shifted the mental model of React developers. Instead of pushing all the rendering and logic to the browser, RSCs allow you to keep heavy dependencies and sensitive logic strictly on the server.
+
+## Understanding the Serialization Boundary
+
+When passing props from a Server Component to a Client Component, data must be serializable. This is a common pitfall for many developers starting with RSC.
+
+```typescript
+import ClientChart from './ClientChart'
+
+export default async function Dashboard() {
+  const data = await db.query('SELECT * FROM stats')
+  
+  // 'data' must be a serializable object, not a complex class instance!
+  return <ClientChart data={data} />
+}
+```
+
+> "Server Components don't replace Client Components. They complement them. Understanding the boundary is the key to mastering the new React."
+
+### Why it Matters
+
+The shift reduces the client-side JavaScript bundle significantly. For content-heavy sites like blogs or ecommerce platforms, this means better SEO, faster Time to Interactive (TTI), and an overall more premium feel.

@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Mastering React Server Components",
+    "slug": "mastering-react-server-components",
+    "date": "2026-09-12T00:00:00.000Z",
+    "excerpt": "A deep dive into how Server Components work under the hood and when to use them over Client Components.",
+    "tags": [
+      "React",
+      "Next.js",
+      "Server Components"
+    ],
+    "draft": false,
+    "content": "const{Fragment:e,jsx:n,jsxs:t}=arguments[0];function _createMdxContent(a){const r={blockquote:\"blockquote\",code:\"code\",h2:\"h2\",h3:\"h3\",p:\"p\",pre:\"pre\",...a.components};return t(e,{children:[n(r.p,{children:\"React Server Components (RSC) have fundamentally shifted the mental model of React developers. Instead of pushing all the rendering and logic to the browser, RSCs allow you to keep heavy dependencies and sensitive logic strictly on the server.\"}),\"\\n\",n(r.h2,{children:\"Understanding the Serialization Boundary\"}),\"\\n\",n(r.p,{children:\"When passing props from a Server Component to a Client Component, data must be serializable. This is a common pitfall for many developers starting with RSC.\"}),\"\\n\",n(r.pre,{children:n(r.code,{className:\"language-typescript\",children:\"import ClientChart from './ClientChart'\\n\\nexport default async function Dashboard() {\\n  const data = await db.query('SELECT * FROM stats')\\n  \\n  // 'data' must be a serializable object, not a complex class instance!\\n  return <ClientChart data={data} />\\n}\\n\"})}),\"\\n\",t(r.blockquote,{children:[\"\\n\",n(r.p,{children:'\"Server Components don\\'t replace Client Components. They complement them. Understanding the boundary is the key to mastering the new React.\"'}),\"\\n\"]}),\"\\n\",n(r.h3,{children:\"Why it Matters\"}),\"\\n\",n(r.p,{children:\"The shift reduces the client-side JavaScript bundle significantly. For content-heavy sites like blogs or ecommerce platforms, this means better SEO, faster Time to Interactive (TTI), and an overall more premium feel.\"})]})}return{default:function(e={}){const{wrapper:t}=e.components||{};return t?n(t,{...e,children:n(_createMdxContent,{...e})}):_createMdxContent(e)}};",
+    "permalink": "/blog/mastering-react-server-components"
+  },
+  {
+    "title": "The Future of Web Development",
+    "slug": "the-future-of-web-development",
+    "date": "2026-10-24T00:00:00.000Z",
+    "excerpt": "Exploring how AI, edge computing, and new frameworks are shaping the next generation of web applications.",
+    "tags": [
+      "Web Dev",
+      "AI",
+      "Edge"
+    ],
+    "draft": false,
+    "content": "const{Fragment:e,jsx:n,jsxs:t}=arguments[0];function _createMdxContent(r){const o={blockquote:\"blockquote\",code:\"code\",h2:\"h2\",h3:\"h3\",p:\"p\",pre:\"pre\",...r.components};return t(e,{children:[n(o.p,{children:\"The web landscape is changing faster than ever. What used to be simple static files served over HTTP has now evolved into incredibly complex distributed systems. As we look into the next decade, a few core technologies will redefine how we build user experiences.\"}),\"\\n\",n(o.h2,{children:\"Edge Computing Everywhere\"}),\"\\n\",n(o.p,{children:\"Moving compute closer to the user is no longer a luxury; it's a necessity. Edge functions allow developers to handle authentications, dynamic routing, and even database interactions right at the CDN level.\"}),\"\\n\",n(o.pre,{children:n(o.code,{className:\"language-javascript\",children:\"export default function middleware(req) {\\n  // Edge-based authentication check\\n  const token = req.cookies.get('auth');\\n  if (!token) return Response.redirect('/login');\\n  \\n  return NextResponse.next();\\n}\\n\"})}),\"\\n\",t(o.blockquote,{children:[\"\\n\",n(o.p,{children:\"\\\"Latency is the new bottleneck. If you aren't rendering at the edge, you're already behind.\\\"\"}),\"\\n\"]}),\"\\n\",n(o.h3,{children:\"The Rise of AI-Assisted Tooling\"}),\"\\n\",n(o.p,{children:\"AI isn't just generating code; it's changing the architecture of how we structure applications. Frameworks are beginning to include built-in mechanisms to stream AI responses gracefully.\"})]})}return{default:function(e={}){const{wrapper:t}=e.components||{};return t?n(t,{...e,children:n(_createMdxContent,{...e})}):_createMdxContent(e)}};",
+    "permalink": "/blog/the-future-of-web-development"
+  }
+]

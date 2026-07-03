@@ -17,18 +17,25 @@ const page = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
         <ProjectCard 
-          title="Portfolio v2"
+          title="Meridian"
           subheading="A personal portfolio website built with Next.js, Tailwind CSS, and a glassmorphism design."
-          readMoreLink="#"
-          githubLink="#"
-          liveLink="#"
+          readMoreLink="/projects/casestudies/meridian"
+          githubLink="https://github.com/parthmunjal07/meridian"
+          liveLink="https://meridian.parthmunjal.in"
+        />
+        <ProjectCard 
+          title="Somnia Forms"
+          subheading="A fully featured fullstack web application to solve real world problems."
+          readMoreLink="/projects/casestudies/somnia-forms"
+          githubLink="https://github.com/parthmunjal07/https://github.com/parthmunjal07/Somnia-forms-trpc"
+          liveLink="https://somniaforms.parthmunjal.in/"
         />
         <ProjectCard 
           title="Swift Polls"
-          subheading="A fully featured fullstack web application to solve real world problems."
-          readMoreLink="#"
-          githubLink="#"
-          liveLink="#"
+          subheading="My own polling platform with both async and live presentation like polls."
+          readMoreLink="/projects/casestudies/swift-polls"
+          githubLink="https://github.com/parthmunjal07/swiftpolls"
+          liveLink="https://swiftpolls.parthmunjal.in/"
         />
       </div>
     </div>
