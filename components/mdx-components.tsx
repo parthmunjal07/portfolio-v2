@@ -22,13 +22,13 @@ const components = {
     <p className="mb-6 text-gray-300 leading-relaxed font-serif" {...props} />
   ),
   ul: (props: HTMLAttributes<HTMLUListElement>) => (
-    <ul className="list-disc list-inside space-y-2 mb-6 ml-4 text-gray-300 font-serif" {...props} />
+    <ul className="list-disc list-outside space-y-3 mb-6 ml-8 text-gray-300 font-serif" {...props} />
   ),
   ol: (props: HTMLAttributes<HTMLOListElement>) => (
-    <ol className="list-decimal list-inside space-y-2 mb-6 ml-4 text-gray-300 font-serif" {...props} />
+    <ol className="list-decimal list-outside space-y-3 mb-6 ml-8 text-gray-300 font-serif" {...props} />
   ),
   li: (props: HTMLAttributes<HTMLLIElement>) => (
-    <li className="text-gray-300" {...props} />
+    <li className="text-gray-300 [&>p]:m-0" {...props} />
   ),
   blockquote: (props: HTMLAttributes<HTMLQuoteElement>) => (
     <blockquote className="border-l-4 border-orange-100/40 pl-4 italic text-gray-400 my-6 bg-white/5 p-4 rounded-r-lg font-serif" {...props} />

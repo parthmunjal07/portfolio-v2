@@ -36,6 +36,8 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
             })}
           </time>
           <span>•</span>
+          <span>{post.readingTime} min read</span>
+          <span>•</span>
           <span>{post.tags.join(', ')}</span>
         </div>
       </header>

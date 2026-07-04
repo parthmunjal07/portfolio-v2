@@ -31,6 +31,7 @@ export default function BlogPage() {
               day: "2-digit",
               year: "numeric",
             })}
+            readingTime={post.readingTime}
             readMoreLink={post.permalink}
           />
         ))}

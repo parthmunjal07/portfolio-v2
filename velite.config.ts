@@ -1,4 +1,10 @@
 import { defineConfig, s } from 'velite'
+import fs from 'fs'
+
+const getReadingTime = (content: string) => {
+  const words = content.replace(/<[^>]+>/g, '').split(/\s+/).length;
+  return Math.max(1, Math.ceil(words / 200));
+}
 
 export default defineConfig({
   root: 'content',
@@ -23,10 +29,16 @@ export default defineConfig({
           draft: s.boolean().default(false),
           content: s.mdx() // compiled mdx
         })
-        .transform(data => ({
-          ...data,
-          permalink: `/blog/${data.slug}`
-        }))
+        .transform((data, { meta }) => {
+          const rawContent = fs.readFileSync(meta.path, 'utf8')
+          const readingTime = getReadingTime(rawContent)
+
+          return {
+            ...data,
+            permalink: `/blog/${data.slug}`,
+            readingTime
+          }
+        })
     }
   }
 })

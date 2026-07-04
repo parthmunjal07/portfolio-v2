@@ -4,6 +4,7 @@ interface BlogCardProps {
   title: string;
   excerpt: string;
   date: string;
+  readingTime?: number;
   readMoreLink: string;
 }
 
@@ -11,6 +12,7 @@ export default function BlogCard({
   title,
   excerpt,
   date,
+  readingTime,
   readMoreLink,
 }: BlogCardProps) {
   return (
@@ -29,8 +31,14 @@ export default function BlogCard({
       {/* soft glow blob behind content, only visible on hover */}
       <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full bg-orange-200/10 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-      <div className="text-xs text-orange-100/70 mb-3 font-mono uppercase tracking-wider">
-        {date}
+      <div className="text-xs text-orange-100/70 mb-3 font-mono uppercase tracking-wider flex items-center space-x-2">
+        <span>{date}</span>
+        {readingTime && (
+          <>
+            <span>•</span>
+            <span>{readingTime} MIN READ</span>
+          </>
+        )}
       </div>
 
       <h3 className="text-2xl font-bold text-white group-hover:text-orange-100 transition-colors duration-300 font-serif">
