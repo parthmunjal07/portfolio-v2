@@ -18,7 +18,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
   }
 
   return (
-    <article className="flex flex-col flex-1 font-sans mt-10 max-w-3xl mx-auto w-full px-4 pb-20">
+    <article className="flex flex-col flex-1 font-sans mt-10 max-w-3xl mx-auto w-full pb-20">
       <Link href="/blog" className="text-sm text-gray-400 hover:text-orange-100 transition-colors mb-8 inline-flex items-center group">
         <span className="mr-2 group-hover:-translate-x-1 transition-transform">←</span> Back to Blog
       </Link>

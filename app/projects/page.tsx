@@ -2,7 +2,7 @@ import ProjectCard from "@/components/ProjectCard";
 
 const page = () => {
   return (
-    <div className="flex flex-col flex-1 font-sans mt-10 max-w-3xl mx-auto w-full px-4 pb-20">
+    <div className="flex flex-col flex-1 font-sans mt-10 max-w-3xl mx-auto w-full pb-20">
       <h1 className="scroll-m-20 text-center text-4xl font-bold text-orange-100 tracking-tight text-balance font-serif">
         Projects
       </h1>

@@ -3,7 +3,7 @@ import { CursorCard } from "@/components/ui/cursor-card";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 font-sans mt-10 max-w-3xl mx-auto w-full items-center px-4">
+    <div className="flex flex-col flex-1 font-sans mt-10 max-w-3xl mx-auto w-full items-center">
       <h1 className="scroll-m-20 text-center text-4xl font-bold text-orange-100 tracking-tight text-balance font-serif">
         Yo, I'm Parth Munjal
       </h1>

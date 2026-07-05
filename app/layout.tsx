@@ -33,7 +33,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Navbar />
-        <main className="flex-1 mt-24 flex flex-col">
+        <main className="flex-1 mt-24 flex flex-col px-5 sm:px-10">
           {children}
         </main>
         <Analytics />
