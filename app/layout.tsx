@@ -3,6 +3,7 @@ import { Inter, Roboto_Slab, Geist } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import { cn } from "@/lib/utils";
+import { Analytics } from "@vercel/analytics/react";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -35,6 +36,7 @@ export default function RootLayout({
         <main className="flex-1 mt-24 flex flex-col">
           {children}
         </main>
+        <Analytics />
       </body>
     </html>
   );
