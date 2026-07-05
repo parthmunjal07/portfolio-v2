@@ -1,0 +1,101 @@
+---
+title: "Building Meridian — An Autonomous AI Executive Assistant"
+date: "2026-07-04T00:00:00Z"
+excerpt: "Meridian is an intelligent, full-stack application designed to act as a personal, autonomous executive assistant."
+---
+
+Meridian is an intelligent, full-stack application designed to act as a personal, autonomous executive assistant. By integrating deeply with a user's communication and scheduling tools, Meridian goes beyond simple task management. It actively triages inbound emails, intelligently detects and schedules calendar events, and provides a conversational interface for users to query their daily workflows.
+
+This case study explores the product architecture, the integration of Large Language Models (LLMs) via the Vercel AI SDK, and the backend engineering required to handle async data processing seamlessly in a modern Next.js environment.
+
+## 1. The Problem Context
+
+The modern knowledge worker spends an inordinate amount of time on "meta-work"—managing the work rather than doing it.
+
+- **Inbox Overload:** Users receive hundreds of emails daily, but only a fraction require immediate action. Traditional filters (like Gmail rules) are rigid and lack semantic understanding.
+- **Scheduling Friction:** Organizing a meeting requires context switching: reading an email, checking a calendar, proposing times, and waiting for a response.
+- **Fragmented Context:** To prepare for the day, a user must check their inbox, their calendar, and their task manager separately to build a mental model of their priorities.
+
+## 2. The Meridian Solution
+
+Meridian was engineered to consolidate these workflows into a single, AI-driven command center.
+
+### Key Product Features
+
+- **AI Inbox Triage & Smart Chips:** Meridian ingests emails and uses LLMs to classify them (e.g., Urgent, Read Later, Action Required). It extracts actionable "Smart Chips" (like a direct link to approve a document or track a package) right into the UI.
+- **Intelligent Event Detection:** When an email suggests a meeting ("Let's chat next Tuesday at 2 PM"), Meridian's EventDetectionService cross-references the user's free/busy calendar data and surfaces a one-click "Create Event" UI.
+- **Agentic Chat Interface:** A conversational UI (supporting voice input) where users can ask, "What are my priorities today?" or "Draft a polite decline to John's email." The agent uses function calling to search emails, read calendars, or send replies.
+- **Asynchronous Daily Digests:** A cron-triggered job that synthesizes the previous 24 hours of emails and upcoming meetings into a concise, actionable morning brief.
+
+## 3. Technical Architecture & Stack
+
+Meridian is built on a modern, React-centric, serverless-first architecture optimized for AI workloads.
+
+### The Frontend (Client)
+
+- **Framework:** Next.js 15 (App Router) maximizing React Server Components (RSC) for performance.
+- **Styling & UI:** Tailwind CSS combined with Shadcn UI (Radix primitives) and Framer Motion for fluid, native-feeling animations.
+- **AI Integration:** ai and @ai-sdk/react (Vercel AI SDK) for streaming LLM responses and rendering Generative UI components on the fly.
+- **Real-time Updates:** Server-Sent Events (SSE) to push background job completions (like email syncs) to the client without aggressive polling.
+
+### The Backend (Server)
+
+- **Runtime:** Node.js (via Vercel Serverless Functions/Edge).
+- **Database:** PostgreSQL managed via Prisma ORM for robust, type-safe data modeling of Users, Emails, CalendarEvents, and AgentDecisions.
+- **Background Jobs:** Redis combined with BullMQ. This is crucial for handling high-latency tasks like initial email synchronization and bulk LLM processing.
+- **Integrations:** Google Workspace APIs (Gmail, Google Calendar) via NextAuth/Auth.js for secure OAuth 2.0 token management.
+
+## 4. Engineering Challenges & Solutions
+
+Building an AI agent that operates autonomously on a user's data presents unique challenges in state management, prompt engineering, and background processing.
+
+### Challenge A: The Latency of AI Operations
+
+Standard web requests expect a response in under 500ms. However, running a newly received email through an LLM to generate a summary, classify its urgency, and extract action items can take 2 to 5 seconds. If this were done synchronously on page load, the UX would be unacceptably slow.
+
+**The Solution: Redis, BullMQ, and Webhooks**
+Meridian decouples data ingestion from AI processing.
+
+- **Ingestion:** When a new email arrives, a webhook is triggered. Meridian simply saves the raw email payload to PostgreSQL via Prisma.
+- **Queueing:** An event is immediately pushed to a BullMQ queue backed by Redis. The HTTP response is instantly returned as 200 OK, freeing up the web server.
+- **Background Processing:** A dedicated background worker picks up the job. It prompts the LLM to analyze the email. Once the LLM returns the classification and summary, the worker writes an AgentDecision record to the database.
+- **Client Notification:** The frontend subscribes to an SSE endpoint (`/api/sse`). When the background worker finishes, it pushes a localized event to the client, which elegantly animates the new "Smart Chips" and AI summary onto the user's screen using Framer Motion.
+
+### Challenge B: Bridging Chat and UI (Generative UI)
+
+Users don't just want text responses; they want actionable interfaces. If a user says, "Schedule a meeting with Sarah for tomorrow," a raw text reply ("I have scheduled it.") is inferior to a rich, interactive calendar widget that the user can confirm or modify.
+
+**The Solution: Vercel AI SDK Function Calling and RSC**
+Meridian leverages the Vercel AI SDK's tool-calling capabilities combined with React Server Components.
+
+- In `app/api/chat/route.ts`, the system defines tools like `getCalendarFreeBusy`, `searchEmails`, and `renderEventModal`.
+- When the user asks to schedule a meeting, the LLM determines it needs to use `renderEventModal`.
+- Instead of returning text, the server streams down a serialized React Server Component (`<CreateEventModal prefilledData={...} />`).
+- The client's `AgentChatUI.tsx` receives this component stream and renders it directly in the chat feed. The user can interact with this UI natively, click "Confirm," and trigger the actual Google Calendar API mutation.
+
+### Challenge C: Managing Context Windows and Costs
+
+Feeding an entire inbox into an LLM context window is mathematically impossible and financially ruinous. To provide a "Daily Digest," the system must synthesize vast amounts of data efficiently.
+
+**The Solution: Map-Reduce Summarization Pipelines**
+Meridian's Digest engine (`app/api/cron/digest/route.ts` and `lib/digest.ts`) uses a map-reduce strategy.
+
+- **Map Phase:** As emails arrive throughout the day, the background workers generate strict, 1-2 sentence summaries and assign a "priority score" (1-10) to each email.
+- **Filter Phase:** At 6:00 AM, the Digest Cron Job fetches only emails with a priority score > 5, ignoring newsletters and cold outreach.
+- **Reduce Phase:** The system takes these pre-computed, dense summaries and feeds them into a single, final LLM prompt alongside the day's calendar events. The LLM is instructed to output a structured JSON response containing "Key Themes," "Required Actions," and "Meeting Prep."
+
+This architecture drastically reduces token usage, speeds up digest generation, and ensures the user only sees highly relevant information.
+
+## 5. Security & Data Privacy
+
+Because Meridian handles deeply personal data (inboxes and schedules), strict security protocols are baked into the architecture:
+
+- **OAuth Least Privilege:** Integrations use incremental authorization. Meridian only requests read-only access to Gmail unless the user explicitly grants send permissions.
+- **Token Security:** NextAuth securely encrypts and manages Refresh Tokens. Access tokens are never exposed to the client-side JavaScript.
+- **Stateless AI Proxies:** Prompts sent to external AI providers do not contain PII unless strictly necessary for the query, and strict data retention agreements (zero-retention policies) are utilized via the API provider tiers.
+
+## 6. Conclusion
+
+Meridian showcases the next evolution of productivity software: moving from passive dashboards to active, agentic systems. By aggressively utilizing Next.js App Router capabilities, offloading intensive LLM tasks to BullMQ background workers, and bridging the gap between text and UI using Vercel's Generative UI, Meridian delivers a low-latency, highly intelligent assistant.
+
+It proves that with the right orchestration of modern web tools and LLM function calling, we can effectively abstract away the tedious "meta-work" of daily life, allowing users to focus on what actually matters.

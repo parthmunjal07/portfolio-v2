@@ -1,0 +1,116 @@
+---
+title: "Somnia: A High-Performance, Open-Source Typeform Alternative"
+date: "2026-07-05T00:00:00Z"
+excerpt: "Building a powerful, open-source form builder and survey platform engineered to deliver a premium, interactive user experience."
+---
+
+Somnia is a powerful, open-source form builder and survey platform engineered to deliver a premium, interactive user experience comparable to industry leaders like Typeform. Built from the ground up as a robust monorepo, Somnia provides teams with an intuitive drag-and-drop form builder, advanced logic jumps, real-time multiplayer collaboration, and deep analytics.
+
+This case study explores the architectural decisions behind Somnia, specifically focusing on how the team utilized Turborepo, tRPC, Next.js, and an independent Express backend to deliver a highly interactive, end-to-end type-safe application capable of handling complex conditional routing and real-time state synchronization.
+
+## 1. The Problem Context
+
+Data collection is the lifeblood of modern businesses, but the landscape of form builders is heavily polarized.
+
+- **The UX vs. Cost Trade-off:** Standard tools (like Google Forms) are free but lack the visual polish and fluid user experience that drives high conversion rates. Premium tools (like Typeform) offer beautiful, conversational UX but come with exorbitant pricing tiers and aggressive vendor lock-in.
+- **Collaboration Friction:** Most form builders treat form creation as a solitary task. When marketing, product, and design teams need to collaborate on a survey, they are forced to share credentials or constantly overwrite each other's work.
+- **Complex Logic Execution:** Building a form that routes users down entirely different paths based on their previous answers (Logic Jumps) requires an intricate evaluation engine that must run flawlessly on the client side to avoid latency.
+
+## 2. The Somnia Solution
+
+Somnia was designed to democratize premium form building by offering an open-source alternative that doesn't compromise on enterprise-grade features or user experience.
+
+### Key Product Features
+
+- **Conversational Form Runner:** A highly polished, distraction-free interface powered by smooth animations and full keyboard accessibility (press "Enter" to submit, "A/B/C" to select options), maximizing completion rates.
+- **Advanced Logic Jumps:** A visual rule builder allowing creators to define intricate conditional routing based on multiple response variables.
+- **Real-Time Multiplayer (Collaboration):** Google Docs-style collaboration where multiple users can edit a form simultaneously, seeing each other's cursors and changes in real-time.
+- **Comprehensive Analytics:** A built-in dashboard tracking drop-off rates, average time-to-complete, and aggregated response data visually.
+- **Enterprise Features:** Role-Based Access Control (RBAC), password-protected forms, scheduled expiration dates, and custom domains.
+
+## 3. Technical Architecture: The Monorepo Strategy
+
+To maintain high developer velocity while separating concerns between the web frontend and a robust real-time backend, Somnia utilizes Turborepo to manage its architecture.
+
+### The Workspace (apps/)
+
+- **apps/web (Frontend):** Built with Next.js 15 (App Router) and React 19. It handles the marketing site, the dashboard, the form builder, and the highly optimized form runner. Styled with Tailwind CSS v4 and animated via Framer Motion.
+- **apps/api (Backend):** A standalone Node.js server running Express. Unlike traditional Next.js applications that rely solely on serverless API routes, Somnia requires a persistent, stateful backend to handle WebSockets (via Socket.io) for real-time collaboration.
+
+### The Shared Packages (packages/)
+
+The magic of Somnia's architecture lies in its shared workspaces:
+
+- **packages/database:** Houses the PostgreSQL schema and migrations using Drizzle ORM. Both the api and web apps can import standard DB models directly.
+- **packages/schemas:** Contains Zod schemas representing the core business logic (e.g., FormSchema, LogicJumpSchema). These are imported by the frontend for client-side form validation and by the backend for payload sanitization, ensuring zero discrepancy.
+- **packages/trpc:** The connective tissue. It defines the tRPC routers, context, and client wrappers, providing seamless, end-to-end type safety between the Express API and the Next.js frontend.
+- **packages/email:** Centralizes React Email templates (like CollaboratorInvite and ExpiryWarning) allowing them to be previewed and tested independently.
+
+## 4. Engineering Challenges & Solutions
+
+Building a platform that rivals a multi-million dollar SaaS product requires overcoming significant hurdles in state management, real-time communication, and UI rendering.
+
+### Challenge A: Bridging Next.js and a Stateful Backend with Type Safety
+
+Because Somnia requires a persistent Express server for WebSockets (Socket.io), the standard Next.js Server Actions or API routes were insufficient for the entire backend load. However, splitting the frontend and backend usually introduces the classic REST API problem: keeping TypeScript interfaces synchronized across repositories.
+
+**The Solution: Monorepo + tRPC**
+
+Somnia leverages tRPC to completely eliminate the need for GraphQL or REST API documentation.
+
+- In `apps/api/src/trpc/procedures.ts`, the backend defines strictly typed procedures (e.g., createForm, getAnalytics).
+- These procedures utilize the shared Zod schemas from `packages/schemas` for input validation.
+- The `apps/web` frontend imports the generated tRPC React query hooks (useQuery, useMutation).
+- **The Result:** If a backend engineer renames a database field from title to formTitle in `packages/database` and updates the tRPC router, the Next.js frontend compilation will instantly fail, highlighting the exact line of code that broke. This creates an unbreakable, type-safe contract across the network boundary.
+
+### Challenge B: The Conversational Form Runner UX
+
+To compete with Typeform, the actual experience of filling out a form (`apps/web/components/FormRunner.tsx`) had to feel native, fluid, and completely frictionless. Native HTML forms are rigid and require page reloads or clunky scrolling.
+
+**The Solution: Framer Motion and State-Driven UI**
+
+Somnia's Form Runner operates as a Single Page Application (SPA) state machine.
+
+- **One Question at a Time:** The runner maintains a `currentIndex` state. Only the active question is rendered in the DOM's primary view.
+- **Fluid Transitions:** By utilizing Framer Motion's `<AnimatePresence>` and custom `PageTransition` components, Somnia calculates the slide direction (up for next, down for previous) and smoothly animates the old question out while bringing the new one into focus.
+- **Ambient Polish:** The team built custom background components like `FogCanvas` and `IntroAnimation` to provide a deep, immersive visual aesthetic that standard SaaS tools lack.
+- **Keyboard-First Navigation:** A custom `useKeyboardNavigation` hook listens for global keystrokes. Users can press `Cmd+Enter` to submit text, or press `A`, `B`, `C` to select multiple-choice options, allowing power users to complete surveys rapidly without touching a mouse.
+
+### Challenge C: Real-Time Multiplayer Form Building
+
+When an organization is preparing a massive launch survey, multiple stakeholders need to edit the form simultaneously. Handling concurrent edits on a deeply nested JSON structure (a form with multiple blocks, options, and logic jumps) can quickly lead to data corruption or race conditions.
+
+**The Solution: Socket.io and Optimistic Concurrency**
+
+While tRPC handles standard CRUD operations, Somnia's `apps/api` server runs a persistent Socket.io instance.
+
+- When a user opens the builder, they join a WebSocket room specific to that `form_id`.
+- As a user types in a field (e.g., editing a question title), the client emits a granular `field_update` event rather than sending the entire form payload.
+- The server broadcasts this delta to all other clients in the room, which instantly update their local React state.
+- **Conflict Resolution:** For structural changes (like deleting a question), Somnia implements optimistic UI updates on the client side while relying on the backend's PostgreSQL database (via Drizzle ORM transactions) as the ultimate source of truth, ensuring that concurrent structural edits do not leave the form in an invalid state.
+
+### Challenge D: Evaluating Complex Logic Jumps
+
+Forms are rarely linear. A user might set a rule: "If Question 1 is 'Yes' AND Question 3 is 'Enterprise', skip to Question 8." Evaluating this on the backend would cause unacceptable latency between every question.
+
+**The Solution: Client-Side Graph Traversal**
+
+Somnia compiles the form's logic jumps into a Directed Acyclic Graph (DAG) when the form data is fetched.
+
+- Inside `apps/api/src/lib/compileFormSchema.ts`, the backend verifies that the creator hasn't accidentally created an infinite loop (e.g., Q2 points to Q1, which points to Q2).
+- The sanitized logic rules are sent to the frontend.
+- As the respondent fills out the form, the `FormRunner` maintains a local dictionary of responses. When the user clicks "Next", the client instantly evaluates the logic jump conditions against the responses dictionary in memory, calculating the exact `nextIndex` in milliseconds without requiring a network request.
+
+## 5. Security & Access Control (RBAC)
+
+Because forms often collect Personally Identifiable Information (PII) or sensitive company data, Somnia implements a strict security posture:
+
+- **Role-Based Access Control:** Built natively into the tRPC middleware, the system checks if a user is an OWNER, EDITOR, or VIEWER for a specific workspace before allowing mutations.
+- **Token Security:** Authentication uses NextAuth.js. For public form respondents, a stateless JWT is generated when they begin a draft, ensuring their progress is saved securely in their browser without requiring an account, while preventing them from accessing other respondents' data.
+- **Form Gating:** Creators can toggle password protection, which encrypts the payload on the server, only returning the questions to the client if the correct hash is provided. Forms can also be set to automatically close via a BullMQ background job based on a specified expiration date.
+
+## 6. Conclusion
+
+Somnia is a masterclass in modern full-stack TypeScript development. By leaning heavily into the Turborepo architecture, the team successfully maintained a clean separation of concerns—allowing a robust Express WebSockets server to handle real-time collaboration while providing the Next.js frontend with 100% type safety via tRPC.
+
+Combined with a meticulous approach to UI/UX utilizing Framer Motion and an advanced client-side logic engine, Somnia stands as a highly performant, scalable, and beautifully designed open-source alternative in the data collection space.

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { CursorCard } from "@/components/ui/cursor-card";
 
 export default function Home() {
   return (
@@ -41,13 +42,13 @@ export default function Home() {
           I ship fullstack softwares for the web, solving real world usecases at scale. On the fun side, I like to pick up existing ideas and refining them my taste.
 
           <p className="text-xl my-3 text-gray-400 font-serif leading-relaxed [word-spacing:3px]">
-            You can find these works at the <a className="text-orange-100 hover:text-white hover:cursor-pointer transition-colors" href="/projects">Projects</a> section of this website.
+            You can find these works at the <CursorCard href="/projects" image="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&q=80&w=800" description="Explore my recent work and open source projects">Projects</CursorCard> section of this website.
           </p>
           <p className="text-xl my-3 text-gray-400 font-serif leading-relaxed [word-spacing:3px]">
-            I write on the topics which I find interesting and engaging, as well as case studies on the projects I have made. You can find them on the  <a className="text-orange-100 hover:text-white hover:cursor-pointer transition-colors" href="/blog">Blogs</a> section of this website.
+            I write on the topics which I find interesting and engaging, as well as case studies on the projects I have made. You can find them on the  <CursorCard href="/blog" image="https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&q=80&w=800" description="Read my technical articles and essays">Blogs</CursorCard> section of this website.
           </p>
           <p className="text-xl my-3 text-gray-400 font-serif leading-relaxed [word-spacing:3px]">
-            I also make videos sharing my journey and also explaining topics that I myself learn. You can find them on my <a className="text-orange-100 hover:text-white hover:cursor-pointer transition-colors" href="https://instagram.com/parth.codes.exe/">Instagram</a> and <a className="text-orange-100 hover:text-white hover:cursor-pointer transition-colors" href="https://youtube.com/@parthmunjal07">Youtube</a> channel.
+            I also make videos sharing my journey and also explaining topics that I myself learn. You can find them on my <CursorCard href="https://instagram.com/parth.codes.exe/" image="https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?auto=format&fit=crop&q=80&w=800" description="Follow my daily journey">Instagram</CursorCard> and <CursorCard href="https://youtube.com/@parthmunjal07" image="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&q=80&w=800" description="Watch my dev tutorials">Youtube</CursorCard> channel.
           </p>
         </div>
       </div>

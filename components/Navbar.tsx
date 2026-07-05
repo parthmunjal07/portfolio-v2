@@ -15,7 +15,7 @@ export default function Navbar() {
 
   return (
     <nav className="fixed top-0 w-full flex items-center justify-center py-6 z-50">
-      <div className="flex gap-8 px-8 py-3 bg-white/5 dark:bg-black/20 backdrop-blur-md rounded-full border border-white/10 shadow-lg">
+      <div className="flex gap-8 px-8 py-3">
         {links.map((link) => {
           const isActive = pathname === link.href;
           return (

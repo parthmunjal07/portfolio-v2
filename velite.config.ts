@@ -39,6 +39,28 @@ export default defineConfig({
             readingTime
           }
         })
+    },
+    caseStudies: {
+      name: 'CaseStudy',
+      pattern: 'casestudies/**/*.mdx',
+      schema: s
+        .object({
+          title: s.string().max(99),
+          slug: s.path().transform(path => path.replace(/^casestudies\//, '')),
+          date: s.isodate(),
+          excerpt: s.string(),
+          content: s.mdx()
+        })
+        .transform((data, { meta }) => {
+          const rawContent = fs.readFileSync(meta.path, 'utf8')
+          const readingTime = getReadingTime(rawContent)
+
+          return {
+            ...data,
+            permalink: `/projects/casestudies/${data.slug}`,
+            readingTime
+          }
+        })
     }
   }
 })
