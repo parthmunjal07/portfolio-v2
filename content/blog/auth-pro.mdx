@@ -1,0 +1,184 @@
+---
+title: "Securing Apps: How Auth works"
+date: "2026-07-09T00:00:00Z"
+excerpt: "A Layered Guide to Modern Authentication, Authorization, and Web Security"
+tags: ["Auth", "Security", "Backend"]
+draft: false
+---
+
+How does a website actually know who you are?
+
+When you log into a dashboard, check out an online cart, or access a private repository, the application seamlessly recognizes you and serves up your personal data. It feels simple, but under the hood, it is a complex, heavily engineered architecture of trust.
+
+In this guide, we are going to build your understanding of modern web security in layers. We will start from the very foundation how we store a simple password and work our way up to the enterprise-grade protocols that power "Login with Google".
+
+## 1\. Why Application Security Matters
+
+Before we look at the *how*, we need to understand the *why*. Security is not a feature you tack onto an application at the end of development; it is a foundational architectural requirement.
+
+The internet is hostile. Automated bots, malicious actors, and automated scripts constantly scan web applications for vulnerabilities. The cost of an insecure system is catastrophic—ranging from massive financial penalties and legal liability to the complete destruction of user trust. Think of the massive data breaches where millions of user records are dumped on the dark web; these almost always stem from failures in the authentication or authorization layers.
+
+### The Two Pillars: Authentication vs. Authorization
+
+At the core of application security are two distinct problems that developers often conflate:
+
+1.  **Who are you?**
+    
+2.  **What are you allowed to do?**
+    
+
+If an attacker can spoof the answer to the first question, or bypass the rules of the second, your entire system is compromised. Let's start with the most basic way we answer the first question: passwords.
+
+## 2\. Password Hashing and Storage
+
+Let’s establish a cardinal rule of web development: **Never, under any circumstances, store passwords in plain text in your database.** If your database is compromised, every single user's account is instantly exposed.
+
+So, how do we store a password without actually storing it? We use **hashing**.
+
+### The Mechanics of Hashing
+
+Hashing is a one-way mathematical function. You put a string of text (a password) in, and you get a fixed-length string of gibberish out.
+
+*   "password123" ➔ `2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824`
+    
+
+Crucially, you cannot reverse this process. You cannot turn the hash back into "password123".
+
+### Salt and bcrypt
+
+If two users have the same password, their hashes will be identical. Attackers know this and use massive databases of pre-computed hashes (Rainbow Tables) to crack passwords instantly.
+
+To fix this, we introduce a **salt**—a random string of characters added to the password *before* it is hashed. This ensures that even if two users have the password "123456", their resulting hashes will look completely different in your MongoDB database.
+
+In modern systems, we use algorithms libraries like **bcrypt**. Bcrypt automatically handles salting and is intentionally *slow*. It incorporates a "work factor" that forces the CPU to spend a fraction of a second computing the hash. This delay is unnoticeable to a user logging in, but it mathematically cripples an attacker trying to guess millions of passwords a second.
+
+### The Verification Process
+
+When a user logs in, the flow looks like this:
+
+1.  The user types their password.
+    
+2.  The server pulls the user's stored hash (and salt) from the database.
+    
+3.  The server runs the submitted password through bcrypt using the stored salt.
+    
+4.  If the resulting hash matches the stored hash, the user is authenticated.
+    
+
+## 3\. Authentication vs. Authorization
+
+Now that we know how to verify a password, we must clearly separate our two security pillars.
+
+*   **Authentication (AuthN):** Verifying identity. It is the process of proving you are who you say you are.
+    
+*   **Authorization (AuthZ):** Verifying permissions. It is the process of checking if you have the right to access a specific resource.
+    
+
+### The Airport Analogy
+
+Imagine you are at an airport. When you arrive at the security checkpoint, you hand the agent your Passport. The agent checks your face against the photo. This is **Authentication**. They have verified your identity.
+
+However, your Passport does not allow you to board a specific plane. For that, you need a Boarding Pass. When you get to the gate, the agent checks your Boarding Pass to see if you are permitted to walk onto Flight 104 to London. This is **Authorization**.
+
+Applications need both. A user might successfully authenticate (log in), but they shouldn't be authorized to delete another user's profile.
+
+## 4\. Role-Based Access Control (RBAC)
+
+When managing authorization in an application, hardcoding rules for every single user is a nightmare. Instead, we use **Role-Based Access Control (RBAC)**.
+
+RBAC sits on a simple premise: Permissions are assigned to *Roles*, and Roles are assigned to *Users*.
+
+### Designing the Hierarchy
+
+Imagine building a blogging platform. You might design three roles:
+
+*   **User:** Can read public posts and edit their own profile.
+    
+*   **Moderator:** Can do everything a User can do, plus delete inappropriate comments.
+    
+*   **Admin:** Can do everything a Moderator can do, plus delete user accounts and view system logs.
+    
+
+When building an API, you implement RBAC at the routing level. For example, in an Express.js backend, you might write a middleware function that intercepts a request to `DELETE /api/users/:id`. The middleware checks the user's assigned role. If the role does not contain the `delete_users` permission, the server immediately rejects the request with a `403 Forbidden` status code.
+
+RBAC is highly scalable. If you need to give a team of 50 people the ability to moderate comments, you don't update 50 user profiles; you simply assign them the Moderator role.
+
+## 5\. OAuth 2.0 Explained
+
+Passwords and RBAC are great for isolated applications. But what happens when applications need to talk to each other?
+
+Imagine you sign up for a new financial budgeting app, and it asks to connect to your bank to read your transaction history. Historically, the app would ask you to type your actual bank username and password into their website. **This is a massive security failure.** You are giving a third-party app total control over your bank account, hoping they store your password securely and don't drain your funds.
+
+### The Valet Key Analogy
+
+OAuth 2.0 was created to solve this problem. It is an **Authorization** protocol.
+
+Think of OAuth like a valet key for your car. A valet key allows the parking attendant to drive your car, but it won't open the glove box or the trunk.
+
+### The Authorization Flow
+
+Here is how OAuth handles the bank scenario safely:
+
+1.  **The Client Application** (the budgeting app) redirects you to the **Authorization Server** (your bank's actual website).
+    
+2.  You log into your bank directly. The budgeting app never sees your password.
+    
+3.  The bank asks you: *"Do you grant this budgeting app permission to read your transactions?"* (This is the Resource Owner granting consent).
+    
+4.  If you say yes, the bank redirects you back to the budgeting app, handing the app an **Access Token**.
+    
+
+This Access Token is the valet key. The budgeting app can now attach this token to API requests to your bank. The bank sees the token, knows it only has "read-only" permissions, and returns the data. If the budgeting app gets hacked, the hackers only get a limited-scope, easily revokable token, not your bank password.
+
+## 6\. OpenID Connect (OIDC)
+
+OAuth 2.0 is incredible, but it has a strict limitation: It was designed *only* for Authorization (granting access to resources), not for Authentication (logging the user in).
+
+Developers started misusing OAuth to authenticate users, which led to messy, insecure implementations. To fix this, the industry built **OpenID Connect (OIDC)** as a standardized identity layer *on top* of OAuth 2.0.
+
+### The ID Token
+
+Where OAuth 2.0 gives the application an Access Token (to access an API), OIDC gives the application an **ID Token** (usually a JWT - JSON Web Token).
+
+This ID Token is essentially a digital ID card. It contains claims (facts) about the user: their name, email address, profile picture URL, and when they logged in.
+
+When you click a button that says **"Login with Google"** or **"Continue with GitHub"**, you are using OIDC.
+
+1.  The app uses OAuth to redirect you to Google.
+    
+2.  You authenticate with Google.
+    
+3.  Google returns an ID Token via OIDC to the app.
+    
+4.  The app decodes the ID Token, sees your email address, and logs you into their system without ever requiring you to create a local password.
+    
+
+## 7\. Modern Authentication Architecture
+
+When you piece all of these concepts together, you get the modern authentication architectures we see in today's SaaS products and enterprise systems.
+
+*   **Traditional Login Systems:** Using a local database, bcrypt for hashing, and session cookies. Still valid for simple, standalone applications.
+    
+*   **Social Login Systems:** Utilizing OIDC to allow users frictionless onboarding via Google, Apple, or GitHub.
+    
+*   **Single Sign-On (SSO):** Used heavily in enterprise. A company has dozens of internal tools (HR portal, Slack, Jira). Instead of employees maintaining 20 different passwords, the company uses an Identity Provider (like Okta or Azure AD). The employee logs in once, and OIDC/SAML protocols authenticate them across all connected applications instantly.
+    
+
+Modern frontend frameworks (like React) and backend APIs communicate almost entirely through token-based architectures. The frontend holds a short-lived token, sending it via HTTP headers to an API, which validates the token and applies RBAC rules before returning JSON data.
+
+## 8\. Security Best Practices
+
+Understanding the architecture is only half the battle. Implementing it securely requires strict adherence to industry best practices:
+
+*   **Implement Multi-Factor Authentication (MFA):** Passwords can be compromised via phishing. MFA (like an authenticator app generating a time-based code) ensures that even if an attacker steals a password, they cannot log in without physical access to the user's device.
+    
+*   **Short Token Expiration:** Access tokens should have a short lifespan (e.g., 15 to 60 minutes). If a token is intercepted by a malicious script, the window of opportunity for the attacker is very small. (You pair this with long-lived "Refresh Tokens" stored securely to maintain the user's session).
+    
+*   **The Principle of Least Privilege:** When designing your RBAC hierarchy or OAuth scopes, give a user or application the absolute minimum amount of access necessary to perform their job.
+    
+*   **Protect Sensitive Routes:** In modern single-page applications, you must protect routes on *both* the frontend and the backend. Hiding a button in React is just UX; enforcing the permission check on the backend API is actual security.
+    
+*   **Never Store Tokens in LocalStorage:** For web applications, storing sensitive access tokens in standard LocalStorage leaves them vulnerable to Cross-Site Scripting (XSS) attacks. Utilize HTTP-Only, secure cookies for session management whenever possible.
+    
+
+By mastering these layers—from the math of bcrypt to the architectural flow of OIDC—you transition from merely building web pages to engineering secure, resilient systems that protect your users' digital lives.
