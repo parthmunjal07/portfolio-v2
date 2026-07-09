@@ -3,6 +3,8 @@ import { notFound } from 'next/navigation';
 import { posts } from '../../../.velite';
 import { MDXContent } from '@/components/mdx-components';
 
+import { TableOfContents } from '@/components/TableOfContents';
+
 export async function generateStaticParams() {
   return posts.map((post) => ({
     slug: post.slug,
@@ -18,35 +20,41 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
   }
 
   return (
-    <article className="flex flex-col flex-1 font-sans mt-10 max-w-3xl mx-auto w-full pb-20">
-      <Link href="/blog" className="text-sm text-gray-400 hover:text-orange-100 transition-colors mb-8 inline-flex items-center group">
-        <span className="mr-2 group-hover:-translate-x-1 transition-transform">←</span> Back to Blog
-      </Link>
-      
-      <header className="mb-10 text-center">
-        <h1 className="scroll-m-20 text-4xl font-bold text-orange-100 tracking-tight text-balance font-serif mb-4">
-          {post.title}
-        </h1>
-        <div className="text-gray-400 text-sm flex items-center justify-center space-x-4">
-          <time dateTime={post.date}>
-            {new Date(post.date).toLocaleDateString("en-US", {
-              month: "short",
-              day: "2-digit",
-              year: "numeric",
-            })}
-          </time>
-          <span>•</span>
-          <span>{post.readingTime} min read</span>
-          <span>•</span>
-          <span>{post.tags.join(', ')}</span>
-        </div>
-      </header>
-      
-      <hr className="w-full border-t border-white/10 mb-10" />
+    <div className="flex xl:gap-10 2xl:gap-20 mx-auto w-full max-w-7xl justify-center">
+      <article className="flex flex-col flex-1 font-sans mt-10 max-w-3xl w-full pb-20 min-w-0">
+        <Link href="/blog" className="text-sm text-gray-400 hover:text-orange-100 transition-colors mb-8 inline-flex items-center group">
+          <span className="mr-2 group-hover:-translate-x-1 transition-transform">←</span> Back to Blog
+        </Link>
+        
+        <header className="mb-10 text-center">
+          <h1 className="scroll-m-20 text-4xl font-bold text-orange-100 tracking-tight text-balance font-serif mb-4">
+            {post.title}
+          </h1>
+          <div className="text-gray-400 text-sm flex items-center justify-center space-x-4">
+            <time dateTime={post.date}>
+              {new Date(post.date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "2-digit",
+                year: "numeric",
+              })}
+            </time>
+            <span>•</span>
+            <span>{post.readingTime} min read</span>
+            <span>•</span>
+            <span>{post.tags.join(', ')}</span>
+          </div>
+        </header>
+        
+        <hr className="w-full border-t border-white/10 mb-10" />
 
-      <div className="prose prose-invert max-w-none text-gray-300">
-        <MDXContent code={post.content} />
-      </div>
-    </article>
+        <div className="prose prose-invert max-w-none text-gray-300">
+          <MDXContent code={post.content} />
+        </div>
+      </article>
+
+      <aside className="hidden xl:block w-[250px] shrink-0 mt-36 relative">
+        <TableOfContents toc={post.toc} />
+      </aside>
+    </div>
   );
 }

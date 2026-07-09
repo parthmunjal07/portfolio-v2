@@ -52,6 +52,10 @@ const components = {
       <a target="_blank" rel="noopener noreferrer" {...props} className="text-orange-400 hover:text-orange-300 underline underline-offset-4" />
     );
   },
+  img: (props: any) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img className="rounded-xl border border-white/10 my-8 shadow-lg max-w-full h-auto mx-auto" {...props} alt={props.alt || ''} />
+  ),
 }
 
 interface MDXProps {

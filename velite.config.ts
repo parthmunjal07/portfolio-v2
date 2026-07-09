@@ -6,6 +6,8 @@ const getReadingTime = (content: string) => {
   return Math.max(1, Math.ceil(words / 200));
 }
 
+import rehypeSlug from 'rehype-slug'
+
 export default defineConfig({
   root: 'content',
   output: {
@@ -14,6 +16,9 @@ export default defineConfig({
     base: '/static/',
     name: '[name]-[hash:6].[ext]',
     clean: true
+  },
+  mdx: {
+    rehypePlugins: [rehypeSlug]
   },
   collections: {
     posts: {
@@ -27,6 +32,7 @@ export default defineConfig({
           excerpt: s.string(),
           tags: s.array(s.string()).default([]),
           draft: s.boolean().default(false),
+          toc: s.toc(),
           content: s.mdx() // compiled mdx
         })
         .transform((data, { meta }) => {
@@ -49,6 +55,7 @@ export default defineConfig({
           slug: s.path().transform(path => path.replace(/^casestudies\//, '')),
           date: s.isodate(),
           excerpt: s.string(),
+          toc: s.toc(),
           content: s.mdx()
         })
         .transform((data, { meta }) => {
