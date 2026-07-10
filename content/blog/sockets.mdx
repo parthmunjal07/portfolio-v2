@@ -35,7 +35,7 @@ To understand why realtime systems are complex, we have to look at how the web w
 
 Think of it like ordering food at a restaurant. You (the Client) ask the waiter (the Server) for a burger. The waiter goes to the kitchen, gets the burger, and brings it back. The transaction is complete. The waiter will not bring you more food unless you explicitly ask for it again.
 
-![](https://cdn.hashnode.com/uploads/covers/69501eadecd9fff694a8b6d8/f11e9fc5-02f8-4c7b-8695-bbfe46f4621b.png align="center")
+![](https://cdn.hashnode.com/uploads/covers/69501eadecd9fff694a8b6d8/f11e9fc5-02f8-4c7b-8695-bbfe46f4621b.png)
 
 This is perfect for loading a static webpage or fetching a user profile. But it completely fails for realtime features. If you are waiting for a chat message, your browser has no way of knowing when the server receives it. The server cannot push the message to you; it has to wait for you to ask.
 
@@ -84,7 +84,7 @@ Instead of the server immediately responding with "No data," the server holds on
 5.  As soon as the client gets the response, it immediately opens a *new* Long Polling request.
     
 
-![](https://cdn.hashnode.com/uploads/covers/69501eadecd9fff694a8b6d8/15ef4730-468c-4eab-9a05-ae70a1463022.png align="center")
+![](https://cdn.hashnode.com/uploads/covers/69501eadecd9fff694a8b6d8/15ef4730-468c-4eab-9a05-ae70a1463022.png)
 
 ### The Tradeoffs of Long Polling
 
@@ -115,7 +115,7 @@ WebSockets are not HTTP. They represent an entirely different protocol (starting
 
 The connection lifecycle starts with an "HTTP Handshake." The client asks the server to upgrade the connection from HTTP to WebSockets. If the server agrees, the HTTP connection is severed, and a persistent, bidirectional TCP connection is established.
 
-![](https://cdn.hashnode.com/uploads/covers/69501eadecd9fff694a8b6d8/1d347d21-c486-4885-b50f-2c6ee6b909a6.png align="center")
+![](https://cdn.hashnode.com/uploads/covers/69501eadecd9fff694a8b6d8/1d347d21-c486-4885-b50f-2c6ee6b909a6.png)
 
 ### Why WebSockets Win for Chat
 
@@ -136,7 +136,7 @@ Imagine a chat room. When you send a message, your WebSocket server doesn't loop
 3.  The Pub/Sub system (often handled by tools like Redis or Apache Kafka) instantly routes the message to all active subscribers.
     
 
-![](https://cdn.hashnode.com/uploads/covers/69501eadecd9fff694a8b6d8/2893275b-f4e0-4092-a993-a06bf5957db0.png align="center")
+![](https://cdn.hashnode.com/uploads/covers/69501eadecd9fff694a8b6d8/2893275b-f4e0-4092-a993-a06bf5957db0.png)
 
 Pub/Sub is the engine that allows event-driven architectures to scale. It ensures that your chat server doesn't crash trying to figure out where to route data.
 
@@ -144,7 +144,7 @@ Pub/Sub is the engine that allows event-driven architectures to scale. It ensure
 
 Understanding when to use which protocol is the hallmark of a strong system designer.
 
-<table style={{minWidth: '125px'}}><colgroup><col style={{minWidth: '25px'}} /><col style={{minWidth: '25px'}} /><col style={{minWidth: '25px'}} /><col style={{minWidth: '25px'}} /><col style={{minWidth: '25px'}} /></colgroup><tbody><tr><td colspan="1" rowspan="1"><p><strong>Feature</strong></p></td><td colspan="1" rowspan="1"><p><strong>Polling</strong></p></td><td colspan="1" rowspan="1"><p><strong>Long Polling</strong></p></td><td colspan="1" rowspan="1"><p><strong>SSE (Server-Sent Events)</strong></p></td><td colspan="1" rowspan="1"><p><strong>WebSockets</strong></p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>Communication</strong></p></td><td colspan="1" rowspan="1"><p>Unidirectional</p></td><td colspan="1" rowspan="1"><p>Unidirectional</p></td><td colspan="1" rowspan="1"><p>Unidirectional (Server to Client)</p></td><td colspan="1" rowspan="1"><p>Bidirectional</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>Connection</strong></p></td><td colspan="1" rowspan="1"><p>Opens &amp; Closes constantly</p></td><td colspan="1" rowspan="1"><p>Held open, then recreates</p></td><td colspan="1" rowspan="1"><p>Single persistent connection</p></td><td colspan="1" rowspan="1"><p>Single persistent connection</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>Overhead</strong></p></td><td colspan="1" rowspan="1"><p>Very High (HTTP headers every time)</p></td><td colspan="1" rowspan="1"><p>Moderate</p></td><td colspan="1" rowspan="1"><p>Low</p></td><td colspan="1" rowspan="1"><p>Very Low (after handshake)</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>Best For</strong></p></td><td colspan="1" rowspan="1"><p>Legacy system support</p></td><td colspan="1" rowspan="1"><p>When WebSockets are blocked by proxies</p></td><td colspan="1" rowspan="1"><p>Notifications, Live Feeds, Tickers</p></td><td colspan="1" rowspan="1"><p>Chat apps, Collaborative tools, Games</p></td></tr></tbody></table>
+<table style={{minWidth: '125px'}}><colgroup><col style={{minWidth: '25px'}} /><col style={{minWidth: '25px'}} /><col style={{minWidth: '25px'}} /><col style={{minWidth: '25px'}} /><col style={{minWidth: '25px'}} /></colgroup><tbody><tr><td colSpan={1} rowSpan={1}><p><strong>Feature</strong></p></td><td colSpan={1} rowSpan={1}><p><strong>Polling</strong></p></td><td colSpan={1} rowSpan={1}><p><strong>Long Polling</strong></p></td><td colSpan={1} rowSpan={1}><p><strong>SSE (Server-Sent Events)</strong></p></td><td colSpan={1} rowSpan={1}><p><strong>WebSockets</strong></p></td></tr><tr><td colSpan={1} rowSpan={1}><p><strong>Communication</strong></p></td><td colSpan={1} rowSpan={1}><p>Unidirectional</p></td><td colSpan={1} rowSpan={1}><p>Unidirectional</p></td><td colSpan={1} rowSpan={1}><p>Unidirectional (Server to Client)</p></td><td colSpan={1} rowSpan={1}><p>Bidirectional</p></td></tr><tr><td colSpan={1} rowSpan={1}><p><strong>Connection</strong></p></td><td colSpan={1} rowSpan={1}><p>Opens &amp; Closes constantly</p></td><td colSpan={1} rowSpan={1}><p>Held open, then recreates</p></td><td colSpan={1} rowSpan={1}><p>Single persistent connection</p></td><td colSpan={1} rowSpan={1}><p>Single persistent connection</p></td></tr><tr><td colSpan={1} rowSpan={1}><p><strong>Overhead</strong></p></td><td colSpan={1} rowSpan={1}><p>Very High (HTTP headers every time)</p></td><td colSpan={1} rowSpan={1}><p>Moderate</p></td><td colSpan={1} rowSpan={1}><p>Low</p></td><td colSpan={1} rowSpan={1}><p>Very Low (after handshake)</p></td></tr><tr><td colSpan={1} rowSpan={1}><p><strong>Best For</strong></p></td><td colSpan={1} rowSpan={1}><p>Legacy system support</p></td><td colSpan={1} rowSpan={1}><p>When WebSockets are blocked by proxies</p></td><td colSpan={1} rowSpan={1}><p>Notifications, Live Feeds, Tickers</p></td><td colSpan={1} rowSpan={1}><p>Chat apps, Collaborative tools, Games</p></td></tr></tbody></table>
 
 ## 9\. Building Realtime Systems at Scale
 
