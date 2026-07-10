@@ -1,0 +1,175 @@
+---
+title: "Securing Apps: How Auth works"
+date: "2026-07-11T00:00:00Z"
+excerpt: "A Layered Guide to Modern Authentication, Authorization, and Web Security"
+tags: ["Sockets", "Realtime", "Backend"]
+draft: false
+---
+
+# Realtime Systems: Polling, WebSockets, SSE, and Pub/Sub
+
+How does WhatsApp deliver a message instantly?
+
+When you hit "send," the text doesn't just float in the ether waiting for your friend's phone to check for new messages. It appears on their screen in milliseconds. In a world where we expect live sports scores to update seamlessly, Uber drivers to move smoothly on a map, and collaborative docs to show keystrokes in real-time, the traditional rules of web communication simply aren't enough.
+
+In this guide, we are going to tear down the architecture of realtime systems. We will start with the fundamental problem of traditional HTTP, explore the hacks developers used to get around it, and eventually unpack the modern protocols and architectures—like WebSockets and Pub/Sub—that power the modern web.
+
+## 1\. What Makes a System "Realtime"?
+
+In software engineering, **realtime** means a system guarantees a response within a strict time constraint—often milliseconds. However, in web development, when we say "realtime," we are usually talking about **near realtime**. We don't mean the microsecond precision required to fire a rocket engine; we mean human-perceptible instantaneity.
+
+Modern applications demand this near-instant communication. If you are building a modern web app, you will inevitably encounter these use cases:
+
+*   **Chat Applications:** WhatsApp, Slack, or Discord.
+    
+*   **Live Dashboards:** Stock market tickers, server health monitors, or IoT sensor data.
+    
+*   **Ride Tracking:** Watching your cab navigate city traffic on a map.
+    
+*   **Collaborative Editing:** Google Docs or Figma, where multiple cursors dance across the screen simultaneously.
+    
+
+## 2\. Traditional Request-Response Communication
+
+To understand why realtime systems are complex, we have to look at how the web was originally built. The web runs on HTTP (Hypertext Transfer Protocol), which follows a strict **Request-Response** model.
+
+Think of it like ordering food at a restaurant. You (the Client) ask the waiter (the Server) for a burger. The waiter goes to the kitchen, gets the burger, and brings it back. The transaction is complete. The waiter will not bring you more food unless you explicitly ask for it again.
+
+![](https://cdn.hashnode.com/uploads/covers/69501eadecd9fff694a8b6d8/f11e9fc5-02f8-4c7b-8695-bbfe46f4621b.png align="center")
+
+This is perfect for loading a static webpage or fetching a user profile. But it completely fails for realtime features. If you are waiting for a chat message, your browser has no way of knowing when the server receives it. The server cannot push the message to you; it has to wait for you to ask.
+
+So, how do we solve this without changing the fundamental rules of the web? We start with a brute-force approach.
+
+## 3\. Polling: The "Are We There Yet?" Approach
+
+If the server can't tell us when there is new data, the simplest solution is to just keep asking. This is called **Polling** (or Short Polling).
+
+You set up a timer on the frontend (using something like `setInterval` in JavaScript) to send an HTTP request to the server every 5 seconds.
+
+*   *Client:* "Any new messages?"
+    
+*   *Server:* "No."
+    
+*   *(5 seconds later)*
+    
+*   *Client:* "Any new messages?"
+    
+*   *Server:* "Yes, here is one."
+    
+
+### The Tradeoffs of Polling
+
+*   **Advantages:** It is incredibly simple to implement. It uses standard HTTP routing and works flawlessly across every browser and network firewall in existence.
+    
+*   **Disadvantages:** It is horribly inefficient. If you have 10,000 users polling your API every 5 seconds, that is 2,000 requests per second hitting your backend—and 99% of those responses will just be empty data. It wastes bandwidth, drains mobile batteries, and overloads your servers.
+    
+
+Polling is only sufficient when data changes predictably and infrequently, or when building internal dashboards where server load isn't a massive concern.
+
+## 4\. Long Polling: Holding the Line
+
+Developers realized that Short Polling was killing their servers, so they invented a clever hack: **Long Polling**.
+
+Instead of the server immediately responding with "No data," the server holds onto the request and keeps the connection open.
+
+1.  The client sends a request: "Any new messages?"
+    
+2.  The server receives the request but *does not respond immediately*.
+    
+3.  The connection hangs in suspense.
+    
+4.  The moment a new message arrives in the database, the server fires the response back to the client.
+    
+5.  As soon as the client gets the response, it immediately opens a *new* Long Polling request.
+    
+
+![](https://cdn.hashnode.com/uploads/covers/69501eadecd9fff694a8b6d8/15ef4730-468c-4eab-9a05-ae70a1463022.png align="center")
+
+### The Tradeoffs of Long Polling
+
+Long polling dramatically reduces the number of empty requests hitting your API. However, holding open thousands of HTTP connections consumes server memory. It was a brilliant stopgap for early chat applications, but it was still a hack on top of a protocol that wasn't designed for it.
+
+## 5\. Server-Sent Events (SSE): The One-Way Street
+
+Eventually, browsers introduced native APIs to handle realtime streams cleanly. **Server-Sent Events (SSE)** is a standard allowing a browser to receive an automatic stream of updates from a server via a single, long-lasting HTTP connection.
+
+Unlike Polling, SSE is a **one-way communication model**. The server pushes data to the client, but the client cannot use that same connection to send data back.
+
+If you are building an Express.js backend, implementing SSE is as simple as setting the `Content-Type` header to `text/event-stream` and writing data to the response object periodically.
+
+### The Tradeoffs of SSE
+
+*   **Advantages:** It uses standard HTTP, so it traverses firewalls easily. It natively supports automatic reconnections and event IDs.
+    
+*   **Limitations:** It is strictly unidirectional (Server → Client). Browsers also historically limit the number of open SSE connections (usually around 6 per domain).
+    
+*   **When to use:** SSE is the absolute best tool for live sports scores, real-time news feeds, or social media notification counters. You don't need a heavy bidirectional protocol if the user is just reading data.
+    
+
+## 6\. WebSockets: The Bidirectional Superhighway
+
+If you want to build a high-performance chat application or a multiplayer game, you need data to flow in both directions instantly. Enter **WebSockets**.
+
+WebSockets are not HTTP. They represent an entirely different protocol (starting with `ws://` or `wss://`).
+
+The connection lifecycle starts with an "HTTP Handshake." The client asks the server to upgrade the connection from HTTP to WebSockets. If the server agrees, the HTTP connection is severed, and a persistent, bidirectional TCP connection is established.
+
+![](https://cdn.hashnode.com/uploads/covers/69501eadecd9fff694a8b6d8/1d347d21-c486-4885-b50f-2c6ee6b909a6.png align="center")
+
+### Why WebSockets Win for Chat
+
+With a WebSocket, the server and the client can push messages to each other at the exact same time without the overhead of HTTP headers, cookies, or request routing. The performance benefits are staggering. Latency drops to milliseconds, making it the industry standard for anything requiring high-frequency interaction.
+
+## 7\. Pub/Sub Systems: The Architectural Glue
+
+So far, we have talked about protocols—how the client talks to a server. But what happens inside your backend when you have millions of users? You need a **Publish-Subscribe (Pub/Sub)** architecture.
+
+Pub/Sub is a system design pattern that decouples the application sending a message (the Producer) from the application receiving it (the Consumer).
+
+Imagine a chat room. When you send a message, your WebSocket server doesn't loop through every user in the database to see who should get it. Instead:
+
+1.  Your server **Publishes** the message to a specific "Topic" (e.g., `chatroom_54`).
+    
+2.  Any user in that chat room has already **Subscribed** to `chatroom_54`.
+    
+3.  The Pub/Sub system (often handled by tools like Redis or Apache Kafka) instantly routes the message to all active subscribers.
+    
+
+![](https://cdn.hashnode.com/uploads/covers/69501eadecd9fff694a8b6d8/2893275b-f4e0-4092-a993-a06bf5957db0.png align="center")
+
+Pub/Sub is the engine that allows event-driven architectures to scale. It ensures that your chat server doesn't crash trying to figure out where to route data.
+
+## 8\. Comparing All Approaches
+
+Understanding when to use which protocol is the hallmark of a strong system designer.
+
+<table style="min-width: 125px;"><colgroup><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"><col style="min-width: 25px;"></colgroup><tbody><tr><td colspan="1" rowspan="1"><p><strong>Feature</strong></p></td><td colspan="1" rowspan="1"><p><strong>Polling</strong></p></td><td colspan="1" rowspan="1"><p><strong>Long Polling</strong></p></td><td colspan="1" rowspan="1"><p><strong>SSE (Server-Sent Events)</strong></p></td><td colspan="1" rowspan="1"><p><strong>WebSockets</strong></p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>Communication</strong></p></td><td colspan="1" rowspan="1"><p>Unidirectional</p></td><td colspan="1" rowspan="1"><p>Unidirectional</p></td><td colspan="1" rowspan="1"><p>Unidirectional (Server to Client)</p></td><td colspan="1" rowspan="1"><p>Bidirectional</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>Connection</strong></p></td><td colspan="1" rowspan="1"><p>Opens &amp; Closes constantly</p></td><td colspan="1" rowspan="1"><p>Held open, then recreates</p></td><td colspan="1" rowspan="1"><p>Single persistent connection</p></td><td colspan="1" rowspan="1"><p>Single persistent connection</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>Overhead</strong></p></td><td colspan="1" rowspan="1"><p>Very High (HTTP headers every time)</p></td><td colspan="1" rowspan="1"><p>Moderate</p></td><td colspan="1" rowspan="1"><p>Low</p></td><td colspan="1" rowspan="1"><p>Very Low (after handshake)</p></td></tr><tr><td colspan="1" rowspan="1"><p><strong>Best For</strong></p></td><td colspan="1" rowspan="1"><p>Legacy system support</p></td><td colspan="1" rowspan="1"><p>When WebSockets are blocked by proxies</p></td><td colspan="1" rowspan="1"><p>Notifications, Live Feeds, Tickers</p></td><td colspan="1" rowspan="1"><p>Chat apps, Collaborative tools, Games</p></td></tr></tbody></table>
+
+## 9\. Building Realtime Systems at Scale
+
+Getting a WebSocket to work on `localhost` is easy. Scaling it to 100,000 concurrent users is a distributed systems nightmare.
+
+When you scale horizontally, you put a Load Balancer in front of multiple backend servers. But WebSockets are stateful. If User A connects to Server 1, and User B connects to Server 2, how do they chat? Server 1 doesn't know User B exists.
+
+To solve this, modern architectures combine protocols and patterns:
+
+*   **Sticky Sessions:** You configure your load balancer to ensure a user's requests always route to the same server they initiated their WebSocket on.
+    
+*   **The Pub/Sub Backplane:** You connect Server 1 and Server 2 to a centralized Redis Pub/Sub instance. When User A messages User B, Server 1 publishes the message to Redis. Redis broadcasts it to Server 2, which then pushes it down the WebSocket to User B.
+    
+
+## 10\. Choosing the Right Approach
+
+Do not default to WebSockets for everything just because they are fast. Engineering is about tradeoffs.
+
+*   **Live Sports Scores / Stock Dashboards:** Use **SSE**. The data only flows one way, and SSE is vastly simpler to implement and debug than WebSockets.
+    
+*   **Chat Applications & Collaborative Apps:** Use **WebSockets**. The bidirectional, low-latency requirements make this non-negotiable.
+    
+*   **Background Tasks & Email Processing:** Use standard **Polling**. If a report takes 5 minutes to generate, checking an endpoint every 15 seconds is perfectly fine.
+    
+*   **Microservices Communication:** Use **Pub/Sub** (Kafka/RabbitMQ) to decouple your backend services and ensure reliable message delivery between your own internal systems.
+    
+
+By understanding the progression from Polling to WebSockets, and layering Pub/Sub underneath it all, you stop hacking around HTTP constraints and start designing systems that feel truly alive.
