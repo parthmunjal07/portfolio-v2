@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { CursorCard } from "@/components/ui/cursor-card";
+import GitHubGraph from "@/components/GitHubGraph";
 
 export default function Home() {
   return (
@@ -52,6 +53,7 @@ export default function Home() {
           </p>
         </div>
       </div>
+      <GitHubGraph username="parthmunjal07" />
       <div className="flex flex-wrap items-center justify-center gap-4 my-2">
         <span className="px-3 py-1.5 text-sm font-mono text-orange-200 bg-orange-950/40 border border-orange-900/50 rounded-md">
           ts
