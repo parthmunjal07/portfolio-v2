@@ -55,23 +55,23 @@ export default function Home() {
       </div>
       <GitHubGraph username="parthmunjal07" />
       <div className="flex flex-wrap items-center justify-center gap-4 my-2">
-        <span className="px-3 py-1.5 text-sm font-mono text-orange-200 bg-orange-950/40 border border-orange-900/50 rounded-md">
+        <span className="px-3 py-1.5 text-sm font-serif text-orange-200 bg-orange-950/40 border border-orange-900/50 rounded-md">
           ts
         </span>
         <span className="text-gray-600">•</span>
-        <span className="px-3 py-1.5 text-sm font-mono text-orange-200 bg-orange-950/40 border border-orange-900/50 rounded-md">
+        <span className="px-3 py-1.5 text-sm font-serif text-orange-200 bg-orange-950/40 border border-orange-900/50 rounded-md">
           react.js
         </span>
         <span className="text-gray-600">•</span>
-        <span className="px-3 py-1.5 text-sm font-mono text-orange-200 bg-orange-950/40 border border-orange-900/50 rounded-md">
+        <span className="px-3 py-1.5 text-sm font-serif text-orange-200 bg-orange-950/40 border border-orange-900/50 rounded-md">
           next.js
         </span>
         <span className="text-gray-600">•</span>
-        <span className="px-3 py-1.5 text-sm font-mono text-orange-200 bg-orange-950/40 border border-orange-900/50 rounded-md">
+        <span className="px-3 py-1.5 text-sm font-serif text-orange-200 bg-orange-950/40 border border-orange-900/50 rounded-md">
           node.js
         </span>
         <span className="text-gray-600">•</span>
-        <span className="px-3 py-1.5 text-sm font-mono text-orange-200 bg-orange-950/40 border border-orange-900/50 rounded-md">
+        <span className="px-3 py-1.5 text-sm font-serif text-orange-200 bg-orange-950/40 border border-orange-900/50 rounded-md">
           express
         </span>
       </div>
