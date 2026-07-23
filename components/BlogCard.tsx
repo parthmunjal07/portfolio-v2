@@ -31,7 +31,7 @@ export default function BlogCard({
       {/* soft glow blob behind content, only visible on hover */}
       <div className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full bg-orange-200/10 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-      <div className="text-xs text-orange-100/70 mb-3 font-mono uppercase tracking-wider flex items-center space-x-2">
+      <div className="text-xs text-orange-100/70 mb-3 font-serif uppercase tracking-wider flex items-center space-x-2">
         <span>{date}</span>
         {readingTime && (
           <>

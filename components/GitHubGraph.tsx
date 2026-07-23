@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 
 interface ContributionDay {
@@ -100,6 +100,7 @@ export default function GitHubGraph({
     y: number;
   } | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchContributions(username).then((w) => {
@@ -110,6 +111,13 @@ export default function GitHubGraph({
       );
       setTotalContributions(total);
       setIsLoaded(true);
+
+      // Auto-scroll to the end (most recent) on mobile/smaller screens
+      setTimeout(() => {
+        if (scrollContainerRef.current) {
+          scrollContainerRef.current.scrollLeft = scrollContainerRef.current.scrollWidth;
+        }
+      }, 50);
     });
   }, [username]);
 
@@ -152,7 +160,7 @@ export default function GitHubGraph({
   if (!isLoaded) {
     return (
       <div className="w-full my-8">
-        <div className="rounded border border-white/10 bg-[#050505] p-6 sm:p-8">
+        <div className="rounded border border-white/10 bg-[#050505] p-4 sm:p-8">
           <div className="flex flex-col gap-2 mb-8">
             <div className="h-3 w-32 rounded bg-white/10 animate-pulse" />
             <div className="h-8 w-48 rounded bg-white/5 animate-pulse" />
@@ -170,7 +178,7 @@ export default function GitHubGraph({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="rounded border border-white/10 bg-[#050505] p-6 sm:p-8 github-graph-container relative overflow-hidden">
+      <div className="rounded border border-white/10 bg-[#050505] p-4 sm:p-8 github-graph-container relative">
         {/* Header - Editorial Style */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
           <div>
@@ -195,7 +203,11 @@ export default function GitHubGraph({
         </div>
 
         {/* Graph */}
-        <div className="overflow-x-auto pb-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div 
+          ref={scrollContainerRef}
+          className="overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0" 
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+        >
           <div className="min-w-[720px]">
             {/* Month labels */}
             <div
